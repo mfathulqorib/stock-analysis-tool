@@ -1,8 +1,9 @@
 from pydantic import BaseModel, Field
 
 from core.prompt_manager import PromptManager
-from researcher.prompts import QUERY_GENERATOR_PROMPT
+from researcher.prompts import QUERY_GENERATOR_PROMPT, FINANCIAL_REPORT_PROMPT
 from researcher.utils import tavily_client
+from rich import print
 
 
 class Queries(BaseModel):
@@ -14,7 +15,7 @@ class Queries(BaseModel):
     queries: list[str]
 
 
-def researcher(query):
+def research(query):
     response = tavily_client.qna_search(query=query)
 
     return response
@@ -26,10 +27,18 @@ def generate_query(company_name):
     pm.add_message("user", f"Generate a query for {company_name}")
 
     response = pm.generate_structured(Queries)
-    queries = response.get("queries")
 
-    for query in queries:
-        context = researcher(query=query)
-        print(context)
+    return response
 
-    # return researcher(response.get("queries")[0])
+
+def generate_financial_report(context):
+    pm = PromptManager()
+    pm.add_message("system", FINANCIAL_REPORT_PROMPT)
+    pm.add_message(
+        "user", f"Generate financial report based on the following context: {context}"
+    )
+
+    response = pm.generate()
+
+    return response
+
