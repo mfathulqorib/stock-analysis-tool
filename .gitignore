@@ -1,0 +1,5 @@
+# cSpell:disable
+
+.vscode/
+.venv/
+.env
